@@ -1,5 +1,5 @@
-import Arduino
-import Sensor
+import Devices.Arduino as Arduino
+import Devices.Sensor as Sensor
 
 class WaterSensor(Sensor.Sensor):
     

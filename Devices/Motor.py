@@ -1,6 +1,6 @@
 import time
-import Arduino
-import Device
+import Devices.Arduino as Arduino
+import Devices.Device as Device
 
 class Motor(Device.Device):
 

@@ -1,5 +1,5 @@
-import Arduino
-import Device
+import Devices.Arduino as Arduino
+import Devices.Device as Device
 import copy
 
 

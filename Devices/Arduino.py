@@ -30,7 +30,7 @@ class Arduino():
     def __new__(
         cls,
         serialObj=serial.Serial('/dev/ttyACM0', 9600),
-        outputFile='arduino.log'
+        outputFile='logs/arduino.log'
     ):
         if Arduino.__instance is None:
             Arduino.__instance = object.__new__(cls)

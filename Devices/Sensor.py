@@ -1,4 +1,4 @@
-import Device
+import Devices.Device as Device
 from abc import abstractmethod
 
 class Sensor(Device.Device):

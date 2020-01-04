@@ -1,4 +1,4 @@
-import Sensor
+import Devices.Sensor as Sensor
 import Adafruit_DHT
 
 
