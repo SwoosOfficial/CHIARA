@@ -6,6 +6,7 @@ import Devices.Motor as Motor
 import Devices.Relais as Relais
 import Devices.TempHygroSensor as TempHygroSensor
 import Devices.WaterSensor as WaterSensor
+import Devices.PWM as PWM
 import Devices.Arduino as Arduino
 
 
@@ -84,18 +85,20 @@ if __name__ == "__main__":
     connected_devices={
         "lid_motor" : Motor.Motor(0),
         "vent" : Relais.Relais(relais_number=4),
-        "wake_up_lamp" : Relais.Relais(relais_number=3),
-        "blue_lamp" : Relais.Relais(),
-        "red_lamp" : Relais.Relais(relais_number=2),
+        "wake_up_light" : Relais.Relais(relais_number=3),
+        "blue_light" : Relais.Relais(),
+        "red_light" : Relais.Relais(relais_number=2),
         "tempHygro" : TempHygroSensor.TempHygroSensor(),
-        "water_sens" : WaterSensor.WaterSensor()
+        "water_sens" : WaterSensor.WaterSensor(),
+        "cold_light_pwm" : PWM.PWM(),
+        "warm_light_pwm" : PWM.PWM(pwm_number=2),
     }
     arduino = Arduino.Arduino()
     #init devs
     for device in connected_devices:
         connected_devices[device].initialise()
 
-    HOST, PORT = "localhost", 65004
+    HOST, PORT = "localhost", 65002
 
     server = ThreadedTCPServer((HOST, PORT), DeviceHandler)
     server_thread = threading.Thread(target=server.serve_forever)
