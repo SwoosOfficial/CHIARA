@@ -53,8 +53,7 @@ class Motor(Device.Device):
             self.drive_to_pos(self.init_pos)
         
     def release(self):
-        with self.lock:
-            self.set_step(0,0,0,0)  
+        self.set_step(0,0,0,0)  
 
     def set_step(self, w1, w2, w3, w4):
         with self.lock:
