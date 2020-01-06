@@ -95,8 +95,8 @@ class Arduino():
                 self.response += self.s.readline().decode('utf-8')[:-3]
                 self.__response_available = True
                 self.response_notifier.notify()
-                with open(self.outputFile, 'a') as file:
-                    file.write(self.response.decode('UTF-8'))    
+                #with open(self.outputFile, 'a') as file:
+                    #file.write(self.response.decode('UTF-8'))    
             except:
                 pass
     
