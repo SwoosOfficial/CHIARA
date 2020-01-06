@@ -1,6 +1,7 @@
 import serial
 import threading
 
+
 class StoppableThread(threading.Thread):
     """Thread class with a stop() method. The thread itself has to check
     regularly for the stopped() condition."""

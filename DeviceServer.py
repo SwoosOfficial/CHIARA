@@ -2,11 +2,14 @@ import socketserver
 import time
 import threading
 
+import traceback
+
 import Devices.Motor as Motor
 import Devices.Relais as Relais
 import Devices.TempHygroSensor as TempHygroSensor
 import Devices.WaterSensor as WaterSensor
 import Devices.PWM as PWM
+import Devices.PWM_Driver as PWM_Driver
 import Devices.Arduino as Arduino
 
 
@@ -38,7 +41,8 @@ class DeviceHandler(socketserver.BaseRequestHandler):
                 function_answer = function(*request_list[2:])
             else:
                 function_answer = function()
-        except:
+        except Exception as E:
+            traceback.print_tb(E.__traceback__)
             return 'Invalid Arguments!'.encode('utf-8')   
         if function_answer is None:
             answer = 'Success!'
@@ -75,6 +79,8 @@ def shutdown():
     kill_thread=threading.Thread(target=server.shutdown)
     kill_thread.start()
     kill_thread.join()
+    for device in connected_devices:
+        connected_devices[device].release()
     #server.shutdown()
     arduino.stop_comm()
     server.server_close()
@@ -93,6 +99,10 @@ if __name__ == "__main__":
         "cold_light_pwm" : PWM.PWM(),
         "warm_light_pwm" : PWM.PWM(pwm_number=2),
     }
+    connected_devices.update({
+        "warm_light_driver":PWM_Driver.PWM_Driver(connected_devices["warm_light_pwm"],
+                                                  relais=connected_devices["wake_up_light"])
+                              })
     arduino = Arduino.Arduino()
     #init devs
     for device in connected_devices:
