@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime,timedelta
 import time
 
 def wait_until(end_datetime):
@@ -17,7 +17,7 @@ if __name__ == '__main__':
     minute=int(input("minute?"))
     wake_time=datetime.today()
     wake_time=wake_time.replace(day=day,hour=hour,minute=minute)
-    wake_time-=datetime.timedelta(0,1800)
+    wake_time-=timedelta(0,1800)
     print(wake_time)
     if wait_until(wake_time):
         import socket
