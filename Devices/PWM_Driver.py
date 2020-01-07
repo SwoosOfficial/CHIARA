@@ -112,6 +112,9 @@ class PWM_Driver(Device.Device):
         #print("{}/{}".format(step,steps))
         return np.cos((0.5*np.pi/steps)*step)
     
+    def quarter_inv_cos(self, step, steps):
+        return -1*np.cos((0.5*np.pi/steps)*step)+1
+    
     def full_inv_cos(self, step, steps, width=1):
         return -0.5*np.cos((2*np.pi/width)*step)+0.5
     
@@ -127,7 +130,7 @@ class PWM_Driver(Device.Device):
             return "Did not start \"{}\", because another operation is still running!".format(func.__name__)
         
             
-    def stop(self, keepOn=False):
+    def stop(self, keepOn=True):
         self.operating.pwm_driver.keepOn = keepOn
         self.operating.stop()
         self.operating.join()
