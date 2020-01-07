@@ -101,7 +101,7 @@ if __name__ == "__main__":
     }
     connected_devices.update({
         "warm_light_driver":PWM_Driver.PWM_Driver(connected_devices["warm_light_pwm"],
-                                                  relais=connected_devices["wake_up_light"])
+                                                  relais=connected_devices["wake_up_light"]),
         "cold_light_driver":PWM_Driver.PWM_Driver(connected_devices["cold_light_pwm"],
                                                   relais=connected_devices["wake_up_light"])
                               })

@@ -141,13 +141,13 @@ class PWM_Driver(Device.Device):
     def set_level(self, level):
         self.__pwm_dev.set_level(int(level))
     
-    def fade_in(self, time=3, steps=100, startval="None", endval="None"):
+    def fade_in(self, time=10, steps=100, startval="None", endval="None"):
         self.keepOn=True
         time=int(time)
         steps=int(steps)
-        return self.start(self.quarter_sine, time=time, steps=steps)
+        return self.start(self.quarter_inv_cos, time=time, steps=steps)
     
-    def fade_out(self, time=3, steps=100, startval="None", endval="None"):
+    def fade_out(self, time=10, steps=100, startval="None", endval="None"):
         self.keepOn=False
         time=int(time)
         steps=int(steps)
