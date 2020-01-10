@@ -104,16 +104,16 @@ class PWM_Driver(Device.Device):
         if self.operating is not None:
             self.stop()
     
-    def quarter_sine(self, step, steps, startval="None", endval="None"):
+    def quarter_sine(self, step, steps, lowval=0, highval=1):
         #print("{}/{}".format(step,steps))
-        return np.sin((0.5*np.pi/steps)*step)
+        return (highval-lowval)*np.sin((0.5*np.pi/steps)*step)+lowval
     
-    def quarter_cos(self, step, steps):
+    def quarter_cos(self, step, steps, lowval=0, highval=1):
         #print("{}/{}".format(step,steps))
-        return np.cos((0.5*np.pi/steps)*step)
+        return (highval-lowval)*np.cos((0.5*np.pi/steps)*step)+lowval
     
-    def quarter_inv_cos(self, step, steps):
-        return -1*np.cos((0.5*np.pi/steps)*step)+1
+    def quarter_inv_cos(self, step, steps, lowval=0, highval=1):
+        return (lowval-highval)*np.cos((0.5*np.pi/steps)*step)+1+lowval
     
     def full_inv_cos(self, step, steps, width=1):
         return -0.5*np.cos((2*np.pi/width)*step)+0.5
