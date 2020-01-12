@@ -1,16 +1,10 @@
 import socketserver
 import time
 import threading
-
 import traceback
-
-import Devices.Motor as Motor
-import Devices.Relais as Relais
-import Devices.TempHygroSensor as TempHygroSensor
-import Devices.WaterSensor as WaterSensor
 import Devices.PWM as PWM
 import Devices.PWM_Driver as PWM_Driver
-import Devices.Arduino as Arduino
+import Devices.RGB_Driver as RGB_Driver
 
 
 class DeviceHandler(socketserver.BaseRequestHandler):
@@ -43,7 +37,8 @@ class DeviceHandler(socketserver.BaseRequestHandler):
                 function_answer = function()
         except Exception as E:
             traceback.print_tb(E.__traceback__)
-            return 'Invalid Arguments!'.encode('utf-8')   
+            print(E)
+            return 'Error: {}!'.format(E).encode('utf-8')   
         if function_answer is None:
             answer = 'Success!'
         else:
@@ -82,30 +77,30 @@ def shutdown():
     for device in connected_devices:
         connected_devices[device].release()
     #server.shutdown()
-    arduino.stop_comm()
     server.server_close()
     print("Server shutting down...")
 
 if __name__ == "__main__":
 
     connected_devices={
-        "lid_motor" : Motor.Motor(0),
-        "vent" : Relais.Relais(relais_number=4),
-        "wake_up_light" : Relais.Relais(relais_number=3),
-        "blue_light" : Relais.Relais(),
-        "red_light" : Relais.Relais(relais_number=2),
-        "tempHygro" : TempHygroSensor.TempHygroSensor(),
-        "water_sens" : WaterSensor.WaterSensor(),
-        "cold_light_pwm" : PWM.PWM(),
-        "warm_light_pwm" : PWM.PWM(pwm_number=2),
+        "red_light_pwm" : PWM.PWM(),
+        "green_light_pwm" : PWM.PWM(pwm_number=23),
+        "blue_light_pwm" : PWM.PWM(pwm_number=27),
     }
     connected_devices.update({
-        "warm_light_driver":PWM_Driver.PWM_Driver(connected_devices["warm_light_pwm"],
-                                                  relais=connected_devices["wake_up_light"]),
-        "cold_light_driver":PWM_Driver.PWM_Driver(connected_devices["cold_light_pwm"],
-                                                  relais=connected_devices["wake_up_light"])
+        "red_light_driver":PWM_Driver.PWM_Driver(connected_devices["red_light_pwm"],
+                                                  relais=None),
+        "green_light_driver":PWM_Driver.PWM_Driver(connected_devices["green_light_pwm"],
+                                                  relais=None),
+        "blue_light_driver":PWM_Driver.PWM_Driver(connected_devices["blue_light_pwm"],
+                                                  relais=None),
                               })
-    arduino = Arduino.Arduino()
+    connected_devices.update({
+        "rgb_driver":RGB_Driver.RGB_Driver(connected_devices["red_light_driver"],
+                                           connected_devices["green_light_driver"],
+                                           connected_devices["blue_light_driver"],
+                                           ),
+                              })
     #init devs
     for device in connected_devices:
         connected_devices[device].initialise()
