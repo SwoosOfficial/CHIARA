@@ -26,7 +26,7 @@ class DriverOperation(threading.Thread):
         self.space = np.linspace(self.now, self.end, self.steps)
         self.pos = 0
         self.timeout = False
-        
+
     
     def run(self):
         with self.pwm_driver.lock:
@@ -104,19 +104,25 @@ class PWM_Driver(Device.Device):
         if self.operating is not None:
             self.stop()
     
-    def quarter_sine(self, step, steps, startval="None", endval="None"):
+    def quarter_sine(self, step, steps, start_val=0, end_val=1):
         #print("{}/{}".format(step,steps))
-        return np.sin((0.5*np.pi/steps)*step)
+        return abs(end_val-start_val)*np.sin((0.5*np.pi/steps)*step)+abs(start_val)
     
-    def quarter_cos(self, step, steps):
+    def quarter_cos(self, step, steps, start_val=1, end_val=0):
         #print("{}/{}".format(step,steps))
-        return np.cos((0.5*np.pi/steps)*step)
+        return (start_val-end_val)*np.cos((0.5*np.pi/steps)*step)+end_val
     
-    def quarter_inv_cos(self, step, steps):
-        return -1*np.cos((0.5*np.pi/steps)*step)+1
+    def quarter_inv_cos(self, step, steps, start_val=0, end_val=1):
+        return abs(end_val-start_val)*(-1*np.cos((0.5*np.pi/steps)*step)+1)+abs(start_val)
     
-    def full_inv_cos(self, step, steps, width=1):
-        return -0.5*np.cos((2*np.pi/width)*step)+0.5
+    def full_inv_cos(self,
+                     step,
+                     steps,
+                     width=1,
+                     low_val=0,
+                     high_val=1):
+        #print(abs(high_val-low_val)*(-0.5*np.cos((2*np.pi/width)*step)+0.5)+abs(low_val))
+        return abs(high_val-low_val)*(-0.5*np.cos((2*np.pi/width)*step)+0.5)+abs(low_val)
     
     def start(self, func, time=3, steps=100, inf=False, **kwargs):
         with self.lock:
@@ -131,37 +137,34 @@ class PWM_Driver(Device.Device):
         
             
     def stop(self, keepOn=True):
-        self.operating.pwm_driver.keepOn = keepOn
-        self.operating.stop()
-        self.operating.join()
+        try:
+            self.operating.pwm_driver.keepOn = keepOn
+            self.operating.stop()
+            self.operating.join()
+        except:
+            pass
     
     def do_step(self, cur_step, level):
-        print(self.__pwm_dev.set_level(int(255*level(cur_step))))
+        self.__pwm_dev.set_level(level(cur_step))
     
     def set_level(self, level):
-        self.__pwm_dev.set_level(int(level))
+        self.__pwm_dev.set_level(level)
     
-    def fade_in(self, time=10, steps=100, startval="None", endval="None"):
+    def fade_in(self, time=10, steps=100, start_val=0, end_val=1):
         self.keepOn=True
-        time=int(time)
-        steps=int(steps)
-        return self.start(self.quarter_inv_cos, time=time, steps=steps)
+        return self.start(self.quarter_inv_cos, time=time, steps=steps, start_val=start_val, end_val=end_val)
     
-    def fade_out(self, time=10, steps=100, startval="None", endval="None"):
+    def fade_in_sine(self, time=10, steps=100, start_val=0, end_val=1):
+        self.keepOn=True
+        return self.start(self.quarter_sine, time=time, steps=steps, start_val=start_val, end_val=end_val)
+    
+    def fade_out(self, time=10, steps=100, start_val=1, end_val=0):
         self.keepOn=False
-        time=int(time)
-        steps=int(steps)
-        return self.start(self.quarter_cos, time=time, steps=steps)
+        return self.start(self.quarter_cos, time=time, steps=steps, start_val=start_val, end_val=end_val)
     
-    def breathe(self, time=30, steps=300, width=50, inf=False):
+    def breathe(self, time=30, steps=300, width=50, inf=False, low_val=0,
+                high_val=1):
         self.keepOn=True
-        time=int(time)
-        steps=int(steps)
-        width=int(width)
-        if inf == "False" or not inf:
-            inf=False
-        else:
-            inf=True
-        return self.start(self.full_inv_cos, time=time, steps=steps, inf=inf, width=width)
+        return self.start(self.full_inv_cos, time=time, steps=steps, inf=inf, width=width, low_val=low_val, high_val=high_val)
         
         

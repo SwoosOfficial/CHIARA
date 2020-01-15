@@ -2,6 +2,9 @@ import socketserver
 import time
 import threading
 import traceback
+
+from ast import literal_eval as ev
+
 import Devices.PWM as PWM
 import Devices.PWM_Driver as PWM_Driver
 import Devices.RGB_Driver as RGB_Driver
@@ -17,7 +20,7 @@ class DeviceHandler(socketserver.BaseRequestHandler):
         except:
             return 'Could not decode!'.encode('utf-8')
         try:
-            request_list = request_str.split('.')
+            request_list = request_str.split(' ')
             device_key = request_list[0]
             instruction = request_list[1]
         except:
@@ -32,6 +35,8 @@ class DeviceHandler(socketserver.BaseRequestHandler):
             return 'Invalid Instruction!'.encode('utf-8')
         try:
             if request_list[2:] != []:
+                request_list[2:] = [ev(arg) for arg in request_list[2:]]
+                print(request_list[2:])
                 function_answer = function(*request_list[2:])
             else:
                 function_answer = function()
@@ -83,9 +88,9 @@ def shutdown():
 if __name__ == "__main__":
 
     connected_devices={
-        "red_light_pwm" : PWM.PWM(),
-        "green_light_pwm" : PWM.PWM(pwm_number=23),
-        "blue_light_pwm" : PWM.PWM(pwm_number=27),
+        "red_light_pwm" : PWM.PWM(pwm_number=27),
+        "green_light_pwm" : PWM.PWM(),
+        "blue_light_pwm" : PWM.PWM(pwm_number=23),
     }
     connected_devices.update({
         "red_light_driver":PWM_Driver.PWM_Driver(connected_devices["red_light_pwm"],

@@ -30,7 +30,7 @@ class PWM(Device.Device):
     #@level.setter
     def set_level(self, new_level):
         with self.lock:
-            subprocess.run(["pigs", "p", str(self.pwm_number), str(new_level)] )
+            subprocess.run(["pigs", "p", str(self.pwm_number), str(int(255*new_level))] )
             return new_level
         
     def initialise(self):
@@ -38,5 +38,4 @@ class PWM(Device.Device):
             subprocess.run(["pigs", "modes", str(self.pwm_number), "w"] )
         
     def release(self):
-        with self.lock:
-            self.p.stop()
+        self.set_level(0)
