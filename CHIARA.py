@@ -5,6 +5,8 @@ import traceback
 
 from ast import literal_eval as ev
 
+from collections import OrderedDict
+
 import Devices.PWM as PWM
 import Devices.PWM_Driver as PWM_Driver
 import Devices.RGB_Driver as RGB_Driver
@@ -79,38 +81,38 @@ def shutdown():
     kill_thread=threading.Thread(target=server.shutdown)
     kill_thread.start()
     kill_thread.join()
-    for device in connected_devices:
+    for device in reversed(connected_devices):
         connected_devices[device].release()
-    #server.shutdown()
-    server.server_close()
+    server.shutdown()
+    #server.server_close()
     print("Server shutting down...")
 
 if __name__ == "__main__":
 
-    connected_devices={
-        "red_light_pwm" : PWM.PWM(pwm_number=27),
-        "green_light_pwm" : PWM.PWM(),
-        "blue_light_pwm" : PWM.PWM(pwm_number=23),
-    }
-    connected_devices.update({
-        "red_light_driver":PWM_Driver.PWM_Driver(connected_devices["red_light_pwm"],
-                                                  relais=None),
-        "green_light_driver":PWM_Driver.PWM_Driver(connected_devices["green_light_pwm"],
-                                                  relais=None),
-        "blue_light_driver":PWM_Driver.PWM_Driver(connected_devices["blue_light_pwm"],
-                                                  relais=None),
-                              })
-    connected_devices.update({
-        "rgb_driver":RGB_Driver.RGB_Driver(connected_devices["red_light_driver"],
+    connected_devices=OrderedDict([
+        ("red_light_pwm", PWM.PWM(pwm_number=27)),
+        ("green_light_pwm" , PWM.PWM()),
+        ("blue_light_pwm" , PWM.PWM(pwm_number=23)),
+    ])
+    connected_devices.update(OrderedDict([
+        ("red_light_driver",PWM_Driver.PWM_Driver(connected_devices["red_light_pwm"],
+                                                  relais=None)),
+        ("green_light_driver",PWM_Driver.PWM_Driver(connected_devices["green_light_pwm"],
+                                                  relais=None)),
+        ("blue_light_driver",PWM_Driver.PWM_Driver(connected_devices["blue_light_pwm"],
+                                                  relais=None)),
+                              ]))
+    connected_devices.update(OrderedDict([
+        ("rgb_driver",RGB_Driver.RGB_Driver(connected_devices["red_light_driver"],
                                            connected_devices["green_light_driver"],
                                            connected_devices["blue_light_driver"],
-                                           ),
-                              })
+                                           )),
+                              ]))
     #init devs
     for device in connected_devices:
         connected_devices[device].initialise()
 
-    HOST, PORT = "localhost", 65002
+    HOST, PORT = "localhost", 65001
 
     server = ThreadedTCPServer((HOST, PORT), DeviceHandler)
     server_thread = threading.Thread(target=server.serve_forever)

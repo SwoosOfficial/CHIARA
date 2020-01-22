@@ -39,3 +39,5 @@ class PWM(Device.Device):
         
     def release(self):
         self.set_level(0)
+        with self.lock:
+            subprocess.run(["pigs", "modes", str(self.pwm_number), "r"] )

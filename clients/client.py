@@ -3,7 +3,7 @@ import readline
 import sys
 
 HOST ='127.0.0.1'
-PORT = 65002
+PORT = 65001
 
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:

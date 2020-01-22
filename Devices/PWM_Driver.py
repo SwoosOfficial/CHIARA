@@ -23,7 +23,7 @@ class DriverOperation(threading.Thread):
         #dyn inits
         self.now = datetime.now().timestamp()
         self.end = self.now + self.total_time
-        self.space = np.linspace(self.now, self.end, self.steps)
+        self.space = np.linspace(self.now, self.end, int(self.steps))
         self.pos = 0
         self.timeout = False
 
@@ -54,16 +54,24 @@ class DriverOperation(threading.Thread):
     
     def do_step_time(self, level, inf=False):
         with self.pwm_driver.lock:
-            step=int(self.steps_p_time*(datetime.now().timestamp()-self.now))
+            time=datetime.now().timestamp()-self.now
+            end=False
+            if time > self.total_time:
+                time=self.total_time
+                if not inf:
+                    end=True
+            step=int(self.steps_p_time*time)
             if self.timeout:
                 n=0
             else:
                 n=1
             if not inf:
-                wait=self.space[self.pos+n]
+                wait=self.space[self.pos+n]   
             else:
                 wait=self.space[0]+(self.pos+n)/self.steps_p_time
             self.pwm_driver.do_step(step, level)
+            if end:
+                raise IndexError
             self.pos+=n
             self.timeout = not self.wait_until(wait,self.pwm_driver.cancel_timeout)
             
@@ -106,7 +114,7 @@ class PWM_Driver(Device.Device):
     
     def quarter_sine(self, step, steps, start_val=0, end_val=1):
         #print("{}/{}".format(step,steps))
-        return abs(end_val-start_val)*np.sin((0.5*np.pi/steps)*step)+abs(start_val)
+        return abs(end_val-start_val)*np.sin((0.5*np.pi/steps)*step)+min(abs(start_val),abs(end_val))
     
     def quarter_cos(self, step, steps, start_val=1, end_val=0):
         #print("{}/{}".format(step,steps))
@@ -123,6 +131,15 @@ class PWM_Driver(Device.Device):
                      high_val=1):
         #print(abs(high_val-low_val)*(-0.5*np.cos((2*np.pi/width)*step)+0.5)+abs(low_val))
         return abs(high_val-low_val)*(-0.5*np.cos((2*np.pi/width)*step)+0.5)+abs(low_val)
+    
+    def full_cos(self,
+                     step,
+                     steps,
+                     width=1,
+                     low_val=0,
+                     high_val=1):
+        #print(abs(high_val-low_val)*(-0.5*np.cos((2*np.pi/width)*step)+0.5)+abs(low_val))
+        return abs(high_val-low_val)*(0.5*np.cos((2*np.pi/width)*step)+0.5)+abs(low_val)
     
     def start(self, func, time=3, steps=100, inf=False, **kwargs):
         with self.lock:
@@ -166,5 +183,9 @@ class PWM_Driver(Device.Device):
                 high_val=1):
         self.keepOn=True
         return self.start(self.full_inv_cos, time=time, steps=steps, inf=inf, width=width, low_val=low_val, high_val=high_val)
-        
+    
+    def rev_breathe(self, time=30, steps=300, width=50, inf=False, low_val=0,
+                high_val=1):
+        self.keepOn=True
+        return self.start(self.full_cos, time=time, steps=steps, inf=inf, width=width, low_val=low_val, high_val=high_val)
         
